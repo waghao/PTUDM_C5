@@ -170,3 +170,34 @@ router.delete(
 );
 
 module.exports = router;
+
+
+// Lấy tất cả sản phẩm trong category theo slug
+router.get("/:categorySlug", async (req, res) => {
+    try {
+        const category = await Category.findOne({ slug: req.params.categorySlug });
+        if (!category) return res.status(404).json({ message: "Category not found" });
+
+        const products = await Product.find({ category: category._id });
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Lấy sản phẩm theo categorySlug và productSlug
+router.get("/:categorySlug/:productSlug", async (req, res) => {
+    try {
+        const category = await Category.findOne({ slug: req.params.categorySlug });
+        if (!category) return res.status(404).json({ message: "Category not found" });
+
+        const product = await Product.findOne({ slug: req.params.productSlug, category: category._id });
+        if (!product) return res.status(404).json({ message: "Product not found" });
+
+        res.json(product);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+module.exports = router;
