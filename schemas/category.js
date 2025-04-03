@@ -1,28 +1,30 @@
 let mongoose = require('mongoose');
+let slugify = require('slugify'); // Đảm bảo bạn đã cài đặt slugify (npm install slugify)
 
 let categorySchema = new mongoose.Schema({
-    name:{
-        type:String,
+    name: {
+        type: String,
         unique: true,
-        required:true
-    },description:{
-        type:String,
-        default:""
+        required: true
+    },
+    description: {
+        type: String,
+        default: ""
+    },
+    slug: {
+        type: String,
+        unique: true
     }
-},{
-    timestamps:true
-})
-const CategorySchema = new mongoose.Schema({
-    name: { type: String, required: true, unique: true },
-    slug: { type: String, unique: true }
+}, {
+    timestamps: true
 });
 
-// Tự động tạo slug trước khi lưu
-CategorySchema.pre("save", function(next) {
+// Tạo slug tự động trước khi lưu vào cơ sở dữ liệu
+categorySchema.pre("save", function(next) {
     if (this.name && !this.slug) {
         this.slug = slugify(this.name, { lower: true, strict: true });
     }
     next();
 });
 
-module.exports = mongoose.model("Category", CategorySchema);
+module.exports = mongoose.model("Category", categorySchema);

@@ -1,5 +1,4 @@
 var express = require('express');
-const { ConnectionCheckOutFailedEvent } = require('mongodb');
 var router = express.Router();
 let productModel = require('../schemas/product');
 let CategoryModel = require('../schemas/category');
@@ -44,7 +43,7 @@ router.get('/', async function (req, res, next) {
 router.get('/:id', async function (req, res, next) {
   try {
     let id = req.params.id;
-    let product = await productModel.findById(id);
+    let product = await productModel.findById(id).populate('category');
     res.status(200).send({
       success: true,
       data: product,
@@ -169,32 +168,35 @@ router.delete(
   }
 );
 
-module.exports = router;
-
-
 // Lấy tất cả sản phẩm trong category theo slug
-router.get("/:categorySlug", async (req, res) => {
+router.get("/slug/:categorySlug", async (req, res) => {
     try {
-        const category = await Category.findOne({ slug: req.params.categorySlug });
+        const category = await CategoryModel.findOne({ slug: req.params.categorySlug });
         if (!category) return res.status(404).json({ message: "Category not found" });
 
-        const products = await Product.find({ category: category._id });
-        res.json(products);
+        const products = await productModel.find({ category: category._id, isDeleted: false }).populate('category');
+        res.json({
+            success: true,
+            data: products,
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
 // Lấy sản phẩm theo categorySlug và productSlug
-router.get("/:categorySlug/:productSlug", async (req, res) => {
+router.get("/slug/:categorySlug/:productSlug", async (req, res) => {
     try {
-        const category = await Category.findOne({ slug: req.params.categorySlug });
+        const category = await CategoryModel.findOne({ slug: req.params.categorySlug });
         if (!category) return res.status(404).json({ message: "Category not found" });
 
-        const product = await Product.findOne({ slug: req.params.productSlug, category: category._id });
+        const product = await productModel.findOne({ slug: req.params.productSlug, category: category._id, isDeleted: false }).populate('category');
         if (!product) return res.status(404).json({ message: "Product not found" });
 
-        res.json(product);
+        res.json({
+            success: true,
+            data: product,
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
