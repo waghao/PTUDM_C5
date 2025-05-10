@@ -10,5 +10,8 @@ router.get('/', function(req, res, next) {
   );
 });
 
+router.use("/slug", require("./products"));
 
 module.exports = router;
+
+
